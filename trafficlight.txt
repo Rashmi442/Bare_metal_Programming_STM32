@@ -1,0 +1,51 @@
+#include <stdint.h>
+
+#define RCC_AHB1ENR (*(volatile uint32_t *)0x40023830)
+
+#define GPIOA_MODER (*(volatile uint32_t *)0x40020000)
+#define GPIOA_ODR   (*(volatile uint32_t *)0x40020014)
+
+void delay(uint32_t t)
+{
+    volatile uint32_t i,j;
+
+    for(i=0;i<t;i++)
+    {
+        for(j=0;j<1600000;j++);
+    }
+}
+
+int main(void)
+{
+    RCC_AHB1ENR |= (1<<0);
+
+    GPIOA_MODER &= ~(3<<10);
+    GPIOA_MODER |= (1<<10);
+
+    GPIOA_MODER &= ~(3<<12);
+    GPIOA_MODER |= (1<<12);
+
+    GPIOA_MODER &= ~(3<<14);
+    GPIOA_MODER |= (1<<14);
+
+    while(1)
+    {
+        // Red ON
+        GPIOA_ODR |= (1<<5);
+        GPIOA_ODR &= ~(1<<6);
+        GPIOA_ODR &= ~(1<<7);
+        delay(5);
+
+        // Green ON
+        GPIOA_ODR &= ~(1<<5);
+        GPIOA_ODR &= ~(1<<6);
+        GPIOA_ODR |= (1<<7);
+        delay(3);
+
+        // Yellow ON
+        GPIOA_ODR &= ~(1<<5);
+        GPIOA_ODR |= (1<<6);
+        GPIOA_ODR &= ~(1<<7);
+        delay(1);
+    }
+}
