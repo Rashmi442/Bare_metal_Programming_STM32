@@ -1,0 +1,59 @@
+#include <stdint.h>
+/* RCC Register */
+#define RCC_AHB1ENR     (*(volatile uint32_t *)0x40023830)
+#define RCC_APB2ENR     (*(volatile uint32_t *)0x40023844)
+/* GPIO Registers */
+#define GPIOA_MODER     (*(volatile uint32_t *)0x40020000)
+#define GPIOA_PUPDR     (*(volatile uint32_t *)0x4002000C)
+
+/*ADC REGISTERS*/
+#define ADC_SR          (*(volatile uint32_t *)0x40012000)
+#define ADC_CR1         (*(volatile uint32_t *)0x40012004)
+#define ADC_CR2         (*(volatile uint32_t *)0x40012008)
+#define ADC_SMPR2       (*(volatile uint32_t *)0x40012010)
+#define ADC_SQR1        (*(volatile uint32_t *)0x4001202C)
+#define ADC_SQR3        (*(volatile uint32_t *)0x40012034)
+#define ADC_DR          (*(volatile uint32_t *)0x4001204C)
+
+volatile uint16_t adc_value;
+
+void ADC_Init (void){
+
+	RCC_AHB1ENR |=(1<<0);
+	RCC_APB2ENR |=(1<<8);
+
+	GPIOA_MODER &=~(3<<0);
+	GPIOA_MODER |=(3<<0);
+	GPIOA_PUPDR &=~(3<<0);
+
+	ADC_CR1 |=(0<<8);
+	ADC_CR2 |= (1<<0);
+
+	ADC_SMPR2 |=(4<<0);
+
+	ADC_SQR1 =0;
+	ADC_SQR3 =0;
+
+}
+
+uint16_t ADC_Read(){
+
+	//start adc conversion
+	ADC_CR2 |=(1<<30);
+    //wait for end of COnversion
+	while (!(ADC_SR & (1<<1)));
+	return(uint16_t)ADC_DR;
+
+}
+
+int main()
+{
+    ADC_Init();
+
+    while(1)
+    {
+    	adc_value=ADC_Read();
+    };
+
+}
+
